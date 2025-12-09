@@ -43,8 +43,8 @@
                     <h3 style="margin: 0; padding-left:10px;">{{ $t("report.report_of") }} {{device.name}}</h3>
                     <div class="device-ctx-legend">
                         {{ $t("report.pcap_sha1") }} {{ pcap.SHA1 }}<br />
-                        {{ $t("report.capture_started") }} {{ pcap["First packet time"].split(",")[0] }}<br />
-                        {{ $t("report.capture_ended") }} {{ pcap["Last packet time"].split(",")[0] }}<br />
+                        {{ $t("report.capture_started") }} {{ firstPacketTime }}<br />
+                        {{ $t("report.capture_ended") }} {{ lastPacketTime }}<br />
                         {{ $t("report.detection_methods") }} {{ detection_methods }}
                     </div>
                 </div>
@@ -170,6 +170,14 @@ export default {
         alerts: Array,
         capture_token: String
     },
+    computed: {
+        firstPacketTime: function(){
+            return this.extractPacketTime(["First packet time", "Earliest packet time"]);
+        },
+        lastPacketTime: function(){
+            return this.extractPacketTime(["Last packet time", "Latest packet time"]);
+        }
+    },
     methods: {
         save_capture: function() {
             console.log("[report.vue] Saving the capture");
@@ -212,6 +220,12 @@ export default {
                     this.whitelisted_records.push(r);
                 }
             })
+        },
+        extractPacketTime: function(keys){
+            const value = keys
+                .map(k => (this.pcap ? this.pcap[k] : undefined))
+                .find(v => typeof v === "string" && v.length > 0);
+            return value ? value.split(",")[0] : "";
         }
     },
     created: function() {
